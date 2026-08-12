@@ -13,15 +13,13 @@ export function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // chamado a partir de um Server Component — ignorado,
-            // o middleware cuida do refresh de sessão
-          }
+        setAll() {
+          // Intencionalmente vazio: Server Components só leem a sessão.
+          // Quem persiste refresh de token é o middleware (roda antes do
+          // render, sempre seguro). Tentar escrever cookies aqui dentro é o
+          // que causa ERR_HTTP_HEADERS_SENT em rotas com streaming (Suspense
+          // via loading.tsx) quando o token expira em produção: o header já
+          // foi enviado ao cliente antes desse write chegar até o Node.
         },
       },
     }
