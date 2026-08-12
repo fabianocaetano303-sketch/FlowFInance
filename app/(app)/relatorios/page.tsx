@@ -96,6 +96,11 @@ export default async function RelatoriosPage({
           </Link>
         </div>
 
+        <Link href="/meus-registros" className="card !p-4 flex items-center justify-between text-sm font-medium text-on-surface">
+          Meus Registros
+          <span className="text-primary">Editar e excluir →</span>
+        </Link>
+
         <div className="card !p-5 space-y-3">
           <p className="text-sm font-semibold text-on-surface">Resumo</p>
           <div className="flex items-center justify-between text-sm">

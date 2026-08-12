@@ -67,6 +67,28 @@ export async function getGastosPeriodo(usuarioId: string, inicio: string, fim: s
   return (data as Gasto[]) || [];
 }
 
+export async function getGanhosTodos(usuarioId: string): Promise<Ganho[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("ganhos")
+    .select("*")
+    .eq("usuario_id", usuarioId)
+    .order("data", { ascending: false })
+    .order("criado_em", { ascending: false });
+  return (data as Ganho[]) || [];
+}
+
+export async function getGastosTodos(usuarioId: string): Promise<Gasto[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("gastos")
+    .select("*")
+    .eq("usuario_id", usuarioId)
+    .order("data", { ascending: false })
+    .order("criado_em", { ascending: false });
+  return (data as Gasto[]) || [];
+}
+
 export async function getDividas(usuarioId: string): Promise<Divida[]> {
   const supabase = createClient();
   const { data } = await supabase
