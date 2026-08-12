@@ -2,6 +2,12 @@
 
 App de controle financeiro pessoal. Next.js 14 (App Router) + Tailwind + Supabase.
 
+## PWA
+
+O app é instalável (Android/iOS/desktop) via `public/manifest.json` + `public/service-worker.js`, registrado no layout raiz (`components/ServiceWorkerRegistrar.tsx`). O service worker faz cache só da shell estática (ícones, manifest, `offline.html`) — nunca de páginas autenticadas ou dos chunks com hash do Next.js, pra não quebrar a cada deploy — e mostra `public/offline.html` quando uma navegação falha por falta de rede. O mesmo arquivo também trata o clique em notificações (rota `notificationclick`, usado por `lib/notificacoes.ts`).
+
+Ícones em `public/icon-192x192.png` e `public/icon-512x512.png` foram gerados a partir de `public/icon.svg` (logo do app). Pra regenerar depois de mudar o logo: instale `sharp` temporariamente (`npm install --no-save sharp`) e rode um script rasterizando o SVG nos dois tamanhos.
+
 ## Deploy (EasyPanel + GitHub)
 
 O projeto tem um `Dockerfile` multi-stage (build otimizado com `output: "standalone"` do Next.js) pronto para deploy via EasyPanel a partir do GitHub:

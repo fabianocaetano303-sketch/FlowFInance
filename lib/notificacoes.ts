@@ -7,7 +7,7 @@ export function notificacoesSuportadas(): boolean {
 export async function registrarServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!notificacoesSuportadas()) return null;
   try {
-    return await navigator.serviceWorker.register("/sw.js");
+    return await navigator.serviceWorker.register("/service-worker.js");
   } catch {
     return null;
   }
@@ -22,7 +22,7 @@ export async function pedirPermissao(): Promise<NotificationPermission | "unsupp
 export async function mostrarNotificacao(titulo: string, corpo: string, url: string, tag?: string): Promise<void> {
   if (!notificacoesSuportadas() || Notification.permission !== "granted") return;
   const registro = await navigator.serviceWorker.ready.catch(() => null);
-  const opcoes: NotificationOptions = { body: corpo, data: { url }, tag, icon: "/icon.svg" };
+  const opcoes: NotificationOptions = { body: corpo, data: { url }, tag, icon: "/icon-192x192.png" };
   if (registro) {
     registro.showNotification(titulo, opcoes);
   } else {
