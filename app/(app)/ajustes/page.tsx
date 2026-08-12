@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getConfiguracoes, getNotificacoesPreferencias, getUsuarioAtual } from "@/lib/queries";
 import AjustesForm from "@/components/AjustesForm";
 import NotificacoesForm from "@/components/NotificacoesForm";
+import InstalarAppCard from "@/components/InstalarAppCard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function AjustesPage() {
       </header>
 
       <div className="px-4 pt-4 space-y-4">
+        <InstalarAppCard />
         <AjustesForm configuracoes={configuracoes} />
         <NotificacoesForm preferencias={preferenciasNotificacao} />
 
