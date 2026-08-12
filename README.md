@@ -2,6 +2,30 @@
 
 App de controle financeiro pessoal. Next.js 14 (App Router) + Tailwind + Supabase.
 
+## Deploy (EasyPanel + GitHub)
+
+O projeto tem um `Dockerfile` multi-stage (build otimizado com `output: "standalone"` do Next.js) pronto para deploy via EasyPanel a partir do GitHub:
+
+1. No EasyPanel, crie um serviço **App** → **From GitHub** e aponte para este repositório (branch `main`). O EasyPanel detecta o `Dockerfile` automaticamente.
+2. Em **Build Args**, cadastre (são embutidas no bundle do cliente durante o build, então precisam estar disponíveis nesse momento, não só em runtime):
+   ```
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   ```
+3. Em **Environment Variables** (runtime), cadastre as demais:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   ANTHROPIC_API_KEY
+   SUPABASE_SERVICE_ROLE_KEY
+   CRON_SECRET
+   ```
+   (as duas `NEXT_PUBLIC_*` precisam estar nos dois lugares — build e runtime.)
+4. Porta do container: `3000` (já exposta no Dockerfile).
+5. Ative "Auto Deploy" no EasyPanel para redeployar a cada push na branch.
+
+**Importante — cron de dívidas recorrentes:** `vercel.json` só funciona em deploys na Vercel. Fora dela (incluindo EasyPanel), configure separadamente uma chamada diária para `GET https://SEU-DOMINIO/api/cron/renovar-dividas?secret=$CRON_SECRET` — pelo agendador de cron do próprio EasyPanel (se disponível no seu plano) ou um serviço externo como cron-job.org.
+
 ## Setup
 
 1. Instale as dependências:
