@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  body {
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-soft;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-on-primary rounded font-medium px-4 py-3 text-sm transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-container-low text-primary border border-primary rounded font-medium px-4 py-3 text-sm transition-colors hover:bg-surface-container disabled:opacity-50;
+  }
+
+  .btn-success {
+    @apply bg-secondary text-on-secondary rounded font-medium px-4 py-3 text-sm transition-opacity hover:opacity-90 disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply bg-tertiary text-on-tertiary rounded font-medium px-4 py-3 text-sm transition-opacity hover:opacity-90 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-container-low border border-outline-variant rounded px-3 py-3 text-base text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10;
+  }
+
+  .label-field {
+    @apply block text-xs font-medium tracking-wide text-on-surface-variant mb-1.5 uppercase;
+  }
+
+  /* Tipografia de números importantes — nunca deixar dado importante pequeno */
+  .number-hero {
+    @apply text-[48px] leading-none font-bold text-accent tnum;
+  }
+
+  .number-lg {
+    @apply text-[36px] leading-none font-bold text-accent tnum;
+  }
+
+  .number-md {
+    @apply text-[32px] leading-none font-bold text-accent tnum;
+  }
+
+  .number-label {
+    @apply text-xs text-on-surface-variant mt-1.5;
+  }
+
+  .titulo-secao {
+    @apply text-2xl font-bold text-on-surface;
+  }
+}
+
+@layer utilities {
+  .animate-shine-bg {
+    background-image: linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(6, 182, 212, 0.35) 50%,
+      transparent 65%
+    );
+    background-size: 250% 100%;
+  }
+}
