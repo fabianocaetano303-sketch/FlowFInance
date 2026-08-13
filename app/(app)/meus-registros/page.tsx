@@ -8,20 +8,25 @@ export default async function MeusRegistrosPage() {
   const usuario = await getUsuarioAtual();
   if (!usuario) redirect("/login");
 
-  const [ganhos, gastos] = await Promise.all([getGanhosTodos(usuario.id), getGastosTodos(usuario.id)]);
+  const [ganhosRaw, gastosRaw] = await Promise.all([getGanhosTodos(usuario.id), getGastosTodos(usuario.id)]);
 
-  const registros: RegistroUnificado[] = [
-    ...ganhos.map((g) => ({ id: g.id, tipo: "ganho" as const, valor: g.valor, descricao: g.descricao, data: g.data })),
-    ...gastos.map((g) => ({
-      id: g.id,
-      tipo: "gasto" as const,
-      valor: g.valor,
-      descricao: g.descricao,
-      data: g.data,
-      categoria: g.categoria,
-      eh_desnecessario: g.eh_desnecessario,
-    })),
-  ].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
+  const ganhos: RegistroUnificado[] = ganhosRaw.map((g) => ({
+    id: g.id,
+    tipo: "ganho",
+    valor: g.valor,
+    descricao: g.descricao,
+    data: g.data,
+  }));
+
+  const gastos: RegistroUnificado[] = gastosRaw.map((g) => ({
+    id: g.id,
+    tipo: "gasto",
+    valor: g.valor,
+    descricao: g.descricao,
+    data: g.data,
+    categoria: g.categoria,
+    eh_desnecessario: g.eh_desnecessario,
+  }));
 
   return (
     <>
@@ -31,7 +36,7 @@ export default async function MeusRegistrosPage() {
       </header>
 
       <div className="px-4 pt-3">
-        <MeusRegistrosList registrosIniciais={registros} />
+        <MeusRegistrosList ganhos={ganhos} gastos={gastos} />
       </div>
     </>
   );
