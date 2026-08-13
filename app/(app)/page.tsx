@@ -14,6 +14,7 @@ import {
   getUsuarioAtual,
 } from "@/lib/queries";
 import {
+  diasAtras,
   formatarMoeda,
   hojeISO,
   inicioFimMes,
@@ -21,7 +22,6 @@ import {
   progressoMetaDia,
   projecaoMes,
   somaValores,
-  toISODate,
 } from "@/lib/financas";
 import { diasPerfeitosSemana, resumoHabitosHoje } from "@/lib/vida";
 
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const hoje = hojeISO();
   const { inicio: inicioMes } = inicioFimMes();
   const { inicio: inicioSemana, fim: fimSemana } = inicioFimSemana();
-  const inicio7Dias = toISODate(new Date(Date.now() - 6 * 86400000));
+  const inicio7Dias = diasAtras(6);
 
   const [config, ganhos, gastos, ganhosMesAteHoje, habitos, diarioHoje, analises] = await Promise.all([
     getConfiguracoes(usuario.id),

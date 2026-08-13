@@ -3,7 +3,7 @@ import VidaSubNav from "@/components/VidaSubNav";
 import VidaMantra from "@/components/VidaMantra";
 import HabitosHoje from "@/components/HabitosHoje";
 import { getHabitos, getHabitosHistorico, getProposito, getUsuarioAtual } from "@/lib/queries";
-import { hojeISO, toISODate } from "@/lib/financas";
+import { diasAtras, hojeISO } from "@/lib/financas";
 import { calcularStreak, ehDiaDevido, gradeContribuicao } from "@/lib/vida";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export default async function HabitosPage() {
   if (!usuario) redirect("/login");
 
   const hoje = hojeISO();
-  const inicioJanela = toISODate(new Date(Date.now() - JANELA_HISTORICO_DIAS * 86400000));
+  const inicioJanela = diasAtras(JANELA_HISTORICO_DIAS);
 
   const [proposito, habitos] = await Promise.all([getProposito(usuario.id), getHabitos(usuario.id)]);
   const habitosAtivos = habitos.filter((h) => h.ativo);

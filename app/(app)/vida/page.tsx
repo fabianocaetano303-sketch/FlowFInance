@@ -14,7 +14,7 @@ import {
   getProposito,
   getUsuarioAtual,
 } from "@/lib/queries";
-import { formatarData, hojeISO, inicioFimMes, toISODate } from "@/lib/financas";
+import { diasAtras, formatarData, hojeISO, inicioFimMes } from "@/lib/financas";
 import {
   calcularStreak,
   contarConclusoes,
@@ -39,7 +39,7 @@ export default async function VidaDashboardPage() {
 
   const hoje = hojeISO();
   const { inicio: inicioMes, fim: fimMes } = inicioFimMes();
-  const inicioJanela = toISODate(new Date(Date.now() - JANELA_HISTORICO_DIAS * 86400000));
+  const inicioJanela = diasAtras(JANELA_HISTORICO_DIAS);
   const janelaAnterior = janelaComparavelMesAnterior();
 
   const [proposito, metas, habitos, config, diarioHoje] = await Promise.all([

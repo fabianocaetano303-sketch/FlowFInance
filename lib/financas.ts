@@ -12,8 +12,38 @@ export function formatarData(data: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+const FUSO_HORARIO_APP = "America/Sao_Paulo";
+
+/**
+ * "Agora" com os componentes de data/hora já resolvidos no fuso do app
+ * (America/Sao_Paulo) — para que .getFullYear()/.getMonth()/.getDate()/
+ * .getHours() etc. leiam o valor certo mesmo quando o processo Node roda em
+ * outro fuso (ex: container Docker em UTC, como no deploy do EasyPanel).
+ *
+ * Sem isso, "hoje" calculado no servidor diverge do "hoje" do usuário por
+ * até ~3h todo dia (janela em que o UTC já virou o dia seguinte mas ainda
+ * é o dia anterior em São Paulo) — um ganho registrado nesse intervalo é
+ * salvo com a data certa, mas some do dashboard porque a query de "hoje"
+ * do servidor aponta pro dia seguinte.
+ */
+export function agoraNoFusoDoApp(): Date {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: FUSO_HORARIO_APP,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const valor = (tipo: string) => Number(partes.find((p) => p.type === tipo)?.value ?? 0);
+  return new Date(valor("year"), valor("month") - 1, valor("day"), valor("hour") % 24, valor("minute"), valor("second"));
+}
+
 export function hojeISO(): string {
-  return toISODate(new Date());
+  return toISODate(agoraNoFusoDoApp());
 }
 
 export function toISODate(date: Date): string {
@@ -23,17 +53,24 @@ export function toISODate(date: Date): string {
   return `${ano}-${mes}-${dia}`;
 }
 
-export function inicioFimMes(ref: Date = new Date()): { inicio: string; fim: string } {
+/** Data ISO de `n` dias atrás, a partir de hoje (no fuso do app). */
+export function diasAtras(n: number): string {
+  const data = agoraNoFusoDoApp();
+  data.setDate(data.getDate() - n);
+  return toISODate(data);
+}
+
+export function inicioFimMes(ref: Date = agoraNoFusoDoApp()): { inicio: string; fim: string } {
   const inicio = new Date(ref.getFullYear(), ref.getMonth(), 1);
   const fim = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
   return { inicio: toISODate(inicio), fim: toISODate(fim) };
 }
 
-export function mesAnterior(ref: Date = new Date()): Date {
+export function mesAnterior(ref: Date = agoraNoFusoDoApp()): Date {
   return new Date(ref.getFullYear(), ref.getMonth() - 1, 1);
 }
 
-export function inicioFimSemana(ref: Date = new Date()): { inicio: string; fim: string } {
+export function inicioFimSemana(ref: Date = agoraNoFusoDoApp()): { inicio: string; fim: string } {
   const diaSemana = ref.getDay(); // 0 = domingo
   const inicio = new Date(ref);
   inicio.setDate(ref.getDate() - diaSemana);
@@ -50,7 +87,7 @@ export function somaValores(itens: { valor: number }[]): number {
   return itens.reduce((total, i) => total + Number(i.valor), 0);
 }
 
-export function mediaDiaria(ganhosDoMes: Ganho[], dataReferencia: Date = new Date()): number {
+export function mediaDiaria(ganhosDoMes: Ganho[], dataReferencia: Date = agoraNoFusoDoApp()): number {
   const totalGanhos = somaValores(ganhosDoMes);
   const diaAtual = dataReferencia.getDate();
   return diaAtual > 0 ? totalGanhos / diaAtual : 0;
@@ -68,7 +105,7 @@ export interface ProjecaoMes {
  * Projeta o total de ganhos do mês com base na média diária até hoje:
  * projecao = (soma dos ganhos do mês até hoje / dia atual) * dias no mês.
  */
-export function projecaoMes(ganhosMes: Ganho[], dataReferencia: Date = new Date()): ProjecaoMes {
+export function projecaoMes(ganhosMes: Ganho[], dataReferencia: Date = agoraNoFusoDoApp()): ProjecaoMes {
   const diaAtual = dataReferencia.getDate();
   const diasNoMes = new Date(dataReferencia.getFullYear(), dataReferencia.getMonth() + 1, 0).getDate();
   const media = diaAtual > 0 ? somaValores(ganhosMes) / diaAtual : 0;

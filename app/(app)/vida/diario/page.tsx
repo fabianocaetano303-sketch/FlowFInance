@@ -5,7 +5,7 @@ import DiarioForm from "@/components/DiarioForm";
 import DiarioTimeline from "@/components/DiarioTimeline";
 import DiarioHistorico from "@/components/DiarioHistorico";
 import { getDiarioEntradas, getDiarioHoje, getProposito, getUsuarioAtual } from "@/lib/queries";
-import { hojeISO, toISODate } from "@/lib/financas";
+import { diasAtras, hojeISO } from "@/lib/financas";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export default async function DiarioPage() {
   ]);
 
   const ultimos7 = Array.from({ length: 7 }).map((_, i) => {
-    const data = toISODate(new Date(Date.now() - (6 - i) * 86400000));
+    const data = diasAtras(6 - i);
     const entrada = entradas.find((e) => e.data === data) ?? null;
     const respostas: [boolean, boolean, boolean] = [!!entrada?.bem, !!entrada?.melhorar, !!entrada?.acao_amanha];
     return { data, respostas, completo: respostas.every(Boolean) };

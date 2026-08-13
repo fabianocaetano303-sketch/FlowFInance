@@ -1,5 +1,5 @@
 import type { FrequenciaHabito, VidaHabito, VidaMeta } from "@/lib/types";
-import { diaDaSemana, hojeISO, inicioFimSemana, mesAnterior, toISODate } from "@/lib/financas";
+import { agoraNoFusoDoApp, diaDaSemana, hojeISO, inicioFimSemana, mesAnterior, toISODate } from "@/lib/financas";
 
 /** Mapa habito_id -> { data -> concluido } usado por várias funções abaixo. */
 export type HistoricoPorHabito = Record<string, Record<string, boolean>>;
@@ -113,7 +113,7 @@ export function serieSemanalHabitos(
   habitosAtivos: VidaHabito[],
   historico: HistoricoPorHabito,
   semanas: number = 6,
-  referencia: Date = new Date()
+  referencia: Date = agoraNoFusoDoApp()
 ): PontoSemanal[] {
   const pontos: PontoSemanal[] = [];
   for (let i = semanas - 1; i >= 0; i--) {
@@ -148,7 +148,7 @@ export function contarConclusoes(historico: HistoricoPorHabito, inicio: string, 
 }
 
 /** Janela do mês anterior limitada ao mesmo número de dias já passados neste mês, para comparação justa. */
-export function janelaComparavelMesAnterior(referencia: Date = new Date()): { inicio: string; fim: string } {
+export function janelaComparavelMesAnterior(referencia: Date = agoraNoFusoDoApp()): { inicio: string; fim: string } {
   const anterior = mesAnterior(referencia);
   const diaAtual = referencia.getDate();
   const ultimoDiaMesAnterior = new Date(anterior.getFullYear(), anterior.getMonth() + 1, 0).getDate();
@@ -302,12 +302,12 @@ export function diasPerfeitosSemana(
   return { perfeitos, totalDias, completa: totalDias > 0 && perfeitos === totalDias };
 }
 
-export function passouDoHorario(horario: string, agora: Date = new Date()): boolean {
+export function passouDoHorario(horario: string, agora: Date = agoraNoFusoDoApp()): boolean {
   const [h, m] = horario.split(":").map(Number);
   const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
   return minutosAgora >= h * 60 + (m || 0);
 }
 
-export function ehSegunda(agora: Date = new Date()): boolean {
+export function ehSegunda(agora: Date = agoraNoFusoDoApp()): boolean {
   return agora.getDay() === 1;
 }

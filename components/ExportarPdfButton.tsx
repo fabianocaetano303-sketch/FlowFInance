@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatarMoeda } from "@/lib/financas";
+import { formatarMoeda, hojeISO } from "@/lib/financas";
 
 interface ResumoRelatorio {
   periodoLabel: string;
@@ -84,7 +84,7 @@ export default function ExportarPdfButton({
         doc.addImage(imagem, "PNG", margem, margem + 6, larguraImagem, alturaImagem);
       }
 
-      doc.save(`financeflow-relatorio-${new Date().toISOString().slice(0, 10)}.pdf`);
+      doc.save(`financeflow-relatorio-${hojeISO()}.pdf`);
     } catch {
       setErro("Não foi possível gerar o PDF.");
     } finally {

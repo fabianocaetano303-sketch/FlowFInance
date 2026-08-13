@@ -12,7 +12,7 @@ import {
   getProposito,
   getUsuarioAtual,
 } from "@/lib/queries";
-import { gastosDesnecessarios, hojeISO, inicioFimMes, mesAnterior, toISODate } from "@/lib/financas";
+import { diasAtras, gastosDesnecessarios, hojeISO, inicioFimMes, mesAnterior } from "@/lib/financas";
 import { janelaComparavelMesAnterior, percentualHabitosPeriodo, percentualMetasMes, streakDiario } from "@/lib/vida";
 
 export const dynamic = "force-dynamic";
@@ -43,11 +43,11 @@ export default async function ProgressoGeralPage() {
 
   const hoje = hojeISO();
   const { inicio: inicioMes, fim: fimMes } = inicioFimMes();
-  const inicioJanelaHabitos = toISODate(new Date(Date.now() - JANELA_HISTORICO_DIAS * 86400000));
-  const inicioJanelaDiario = toISODate(new Date(Date.now() - JANELA_DIARIO_DIAS * 86400000));
+  const inicioJanelaHabitos = diasAtras(JANELA_HISTORICO_DIAS);
+  const inicioJanelaDiario = diasAtras(JANELA_DIARIO_DIAS);
   const janelaAnterior = janelaComparavelMesAnterior();
   const { inicio: inicioMesAnteriorCompleto, fim: fimMesAnteriorCompleto } = inicioFimMes(mesAnterior());
-  const seteDiasAtras = toISODate(new Date(Date.now() - 6 * 86400000));
+  const seteDiasAtras = diasAtras(6);
 
   const [proposito, habitos, metas, entradasDiario, gastosMes] = await Promise.all([
     getProposito(usuario.id),
