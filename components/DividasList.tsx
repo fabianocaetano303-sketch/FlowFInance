@@ -71,7 +71,7 @@ export default function DividasList({ dividasIniciais }: { dividasIniciais: Divi
           <p className="text-xs font-medium tracking-wide text-on-surface-variant uppercase">Dívidas Pagas</p>
           <div className="space-y-2">
             {dividasPagas.map((divida) => (
-              <DividaPagaCard key={divida.id} divida={divida} />
+              <DividaPagaCard key={divida.id} divida={divida} onAlterado={atualizar} />
             ))}
           </div>
         </div>
@@ -156,7 +156,25 @@ function DividaCard({
   );
 }
 
-function DividaPagaCard({ divida }: { divida: Divida }) {
+function DividaPagaCard({ divida, onAlterado }: { divida: Divida; onAlterado: () => void }) {
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function excluir() {
+    setErro(null);
+    setExcluindo(true);
+    const resposta = await fetch(`/api/dividas/${divida.id}`, { method: "DELETE" });
+    setExcluindo(false);
+
+    if (!resposta.ok) {
+      setErro("Não foi possível excluir.");
+      return;
+    }
+
+    onAlterado();
+  }
+
   return (
     <div className="card !p-4 bg-surface-container-low opacity-70">
       <div className="flex items-center justify-between">
@@ -168,6 +186,41 @@ function DividaPagaCard({ divida }: { divida: Divida }) {
           {formatarMoeda(divida.valor_total)}
         </span>
       </div>
+
+      {confirmandoExclusao ? (
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-outline-variant">
+          <span className="text-xs text-on-surface-variant flex-1">Tem certeza que quer deletar esta dívida paga?</span>
+          <button
+            type="button"
+            onClick={() => setConfirmandoExclusao(false)}
+            className="text-xs font-medium text-on-surface-variant hover:text-on-surface px-2 py-1"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={excluir}
+            disabled={excluindo}
+            className="text-xs font-medium text-error hover:underline px-2 py-1"
+          >
+            {excluindo ? "Excluindo..." : "Confirmar"}
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-outline-variant">
+          {erro && <span className="text-xs text-error">{erro}</span>}
+          <button
+            type="button"
+            onClick={() => setConfirmandoExclusao(true)}
+            className="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant hover:text-error ml-auto"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Deletar
+          </button>
+        </div>
+      )}
     </div>
   );
 }
