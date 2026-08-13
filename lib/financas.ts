@@ -163,15 +163,35 @@ export interface PontoDiario {
   data: string;
   ganhos: number;
   gastos: number;
+  pagamentosDivida: number;
   saldoAcumulado: number;
 }
 
-/** Série dia-a-dia (ganhos, gastos e saldo acumulado) para os gráficos de barra/linha. */
-export function serieDiaria(ganhosMes: Ganho[], gastosMes: Gasto[], inicio: string, fim: string): PontoDiario[] {
+/** Soma o valor pago de uma lista de pagamentos de dívida. */
+export function somaPagamentosDivida(pagamentos: { valor_pago: number }[]): number {
+  return pagamentos.reduce((total, p) => total + Number(p.valor_pago), 0);
+}
+
+/**
+ * Série dia-a-dia (ganhos, gastos, pagamentos de dívida e saldo acumulado)
+ * para os gráficos de barra/linha. Pagamento de dívida é dinheiro que saiu
+ * do bolso — entra no saldo acumulado junto com os gastos normais.
+ */
+export function serieDiaria(
+  ganhosMes: Ganho[],
+  gastosMes: Gasto[],
+  pagamentosDividaMes: { valor_pago: number; data_pagamento: string }[],
+  inicio: string,
+  fim: string
+): PontoDiario[] {
   const porDiaGanhos: Record<string, number> = {};
   for (const g of ganhosMes) porDiaGanhos[g.data] = (porDiaGanhos[g.data] || 0) + Number(g.valor);
   const porDiaGastos: Record<string, number> = {};
   for (const g of gastosMes) porDiaGastos[g.data] = (porDiaGastos[g.data] || 0) + Number(g.valor);
+  const porDiaPagamentos: Record<string, number> = {};
+  for (const p of pagamentosDividaMes) {
+    porDiaPagamentos[p.data_pagamento] = (porDiaPagamentos[p.data_pagamento] || 0) + Number(p.valor_pago);
+  }
 
   const pontos: PontoDiario[] = [];
   let acumulado = 0;
@@ -179,9 +199,10 @@ export function serieDiaria(ganhosMes: Ganho[], gastosMes: Gasto[], inicio: stri
   while (cursor <= fim) {
     const ganhos = porDiaGanhos[cursor] || 0;
     const gastos = porDiaGastos[cursor] || 0;
-    acumulado += ganhos - gastos;
+    const pagamentosDivida = porDiaPagamentos[cursor] || 0;
+    acumulado += ganhos - gastos - pagamentosDivida;
     const dia = Number(cursor.split("-")[2]);
-    pontos.push({ dia, data: cursor, ganhos, gastos, saldoAcumulado: acumulado });
+    pontos.push({ dia, data: cursor, ganhos, gastos, pagamentosDivida, saldoAcumulado: acumulado });
     cursor = proximoDiaISO(cursor);
   }
   return pontos;

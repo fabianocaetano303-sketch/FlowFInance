@@ -63,6 +63,10 @@ export interface PagamentoDivida {
   criado_em: string;
 }
 
+export interface PagamentoDividaDetalhado extends PagamentoDivida {
+  credor: string;
+}
+
 export interface SeparacaoDivida {
   id: string;
   divida_id: string;

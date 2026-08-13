@@ -7,6 +7,7 @@ interface ResumoRelatorio {
   periodoLabel: string;
   ganhos: number;
   gastos: number;
+  pagamentosDivida: number;
   saldo: number;
 }
 
@@ -53,6 +54,10 @@ export default function ExportarPdfButton({
       y += 5;
       doc.text(`Gastos: ${formatarMoeda(resumo.gastos)}`, margem, y);
       y += 5;
+      if (resumo.pagamentosDivida > 0) {
+        doc.text(`Pagamentos de dívida: ${formatarMoeda(resumo.pagamentosDivida)}`, margem, y);
+        y += 5;
+      }
       doc.text(`Saldo: ${formatarMoeda(resumo.saldo)}`, margem, y);
       y += 10;
 

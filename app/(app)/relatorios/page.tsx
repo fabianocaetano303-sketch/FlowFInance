@@ -4,10 +4,11 @@ import PeriodoFiltro from "@/components/PeriodoFiltro";
 import GastosFiltro from "@/components/GastosFiltro";
 import GraficosRelatorio from "@/components/GraficosRelatorio";
 import ExportarPdfButton from "@/components/ExportarPdfButton";
-import { getConfiguracoes, getGanhosPeriodo, getGastosPeriodo, getUsuarioAtual } from "@/lib/queries";
+import { getConfiguracoes, getGanhosPeriodo, getGastosPeriodo, getPagamentosDividaPeriodo, getUsuarioAtual } from "@/lib/queries";
 import {
   calcularAlertasOrcamento,
   comparativoMensal,
+  formatarData,
   formatarMoeda,
   gastosDesnecessarios,
   gastosPorCategoria,
@@ -15,6 +16,7 @@ import {
   inicioFimSemana,
   mesAnterior,
   serieDiaria,
+  somaPagamentosDivida,
   somaValores,
 } from "@/lib/financas";
 
@@ -33,26 +35,32 @@ export default async function RelatoriosPage({
   const { inicio: inicioMes, fim: fimMes } = inicioFimMes();
   const { inicio: inicioMesAnterior, fim: fimMesAnterior } = inicioFimMes(mesAnterior());
 
-  const [config, ganhos, gastos, ganhosMes, gastosMes, ganhosMesAnterior, gastosMesAnterior] = await Promise.all([
-    getConfiguracoes(usuario.id),
-    getGanhosPeriodo(usuario.id, inicio, fim),
-    getGastosPeriodo(usuario.id, inicio, fim),
-    getGanhosPeriodo(usuario.id, inicioMes, fimMes),
-    getGastosPeriodo(usuario.id, inicioMes, fimMes),
-    getGanhosPeriodo(usuario.id, inicioMesAnterior, fimMesAnterior),
-    getGastosPeriodo(usuario.id, inicioMesAnterior, fimMesAnterior),
-  ]);
+  const [config, ganhos, gastos, pagamentosDivida, ganhosMes, gastosMes, pagamentosDividaMes, ganhosMesAnterior, gastosMesAnterior] =
+    await Promise.all([
+      getConfiguracoes(usuario.id),
+      getGanhosPeriodo(usuario.id, inicio, fim),
+      getGastosPeriodo(usuario.id, inicio, fim),
+      getPagamentosDividaPeriodo(usuario.id, inicio, fim),
+      getGanhosPeriodo(usuario.id, inicioMes, fimMes),
+      getGastosPeriodo(usuario.id, inicioMes, fimMes),
+      getPagamentosDividaPeriodo(usuario.id, inicioMes, fimMes),
+      getGanhosPeriodo(usuario.id, inicioMesAnterior, fimMesAnterior),
+      getGastosPeriodo(usuario.id, inicioMesAnterior, fimMesAnterior),
+    ]);
 
   const totalGanhos = somaValores(ganhos);
   const totalGastos = somaValores(gastos);
-  const saldo = totalGanhos - totalGastos;
+  const totalPagamentosDivida = somaPagamentosDivida(pagamentosDivida);
+  const saldo = totalGanhos - totalGastos - totalPagamentosDivida;
   const porCategoria = Object.entries(gastosPorCategoria(gastos)).sort((a, b) => b[1] - a[1]);
   const alertas = calcularAlertasOrcamento(gastos, config);
   const idiotas = gastosDesnecessarios(gastos);
   const totalIdiotas = somaValores(idiotas);
 
+  const totalPagamentosDividaMes = somaPagamentosDivida(pagamentosDividaMes);
   const porCategoriaMes = Object.entries(gastosPorCategoria(gastosMes)).sort((a, b) => b[1] - a[1]);
-  const serie = serieDiaria(ganhosMes, gastosMes, inicioMes, fimMes);
+  if (totalPagamentosDividaMes > 0) porCategoriaMes.push(["Dívidas Pagas", totalPagamentosDividaMes]);
+  const serie = serieDiaria(ganhosMes, gastosMes, pagamentosDividaMes, inicioMes, fimMes);
   const comparativo = comparativoMensal(ganhosMes, gastosMes, ganhosMesAnterior, gastosMesAnterior);
 
   return (
@@ -69,6 +77,7 @@ export default async function RelatoriosPage({
             periodoLabel: `${periodo === "semana" ? "Semana atual" : "Mês atual"} · ${formatarPeriodo(inicio)} a ${formatarPeriodo(fim)}`,
             ganhos: totalGanhos,
             gastos: totalGastos,
+            pagamentosDivida: totalPagamentosDivida,
             saldo,
           }}
           porCategoria={porCategoria}
@@ -111,6 +120,12 @@ export default async function RelatoriosPage({
             <span className="text-on-surface-variant">Gastos</span>
             <span className="font-semibold text-tertiary tnum">{formatarMoeda(totalGastos)}</span>
           </div>
+          {totalPagamentosDivida > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-on-surface-variant">Pagamentos de dívida</span>
+              <span className="font-semibold text-warning tnum">{formatarMoeda(totalPagamentosDivida)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-sm pt-2 border-t border-outline-variant">
             <span className="text-on-surface-variant">Saldo</span>
             <span className={`font-semibold tnum ${saldo >= 0 ? "text-secondary" : "text-tertiary"}`}>
@@ -118,6 +133,26 @@ export default async function RelatoriosPage({
             </span>
           </div>
         </div>
+
+        {pagamentosDivida.length > 0 && (
+          <div className="card !p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-warning">Dívidas Pagas no Período</p>
+              <p className="text-sm font-semibold text-warning tnum">{formatarMoeda(totalPagamentosDivida)}</p>
+            </div>
+            <ul className="divide-y divide-outline-variant">
+              {pagamentosDivida.map((p) => (
+                <li key={p.id} className="flex items-center justify-between py-2 text-sm">
+                  <div>
+                    <span className="text-on-surface">{p.credor}</span>
+                    <span className="text-xs text-on-surface-variant tnum block">{formatarData(p.data_pagamento)}</span>
+                  </div>
+                  <span className="font-medium text-on-surface tnum">{formatarMoeda(p.valor_pago)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <AnaliseFinanceira comparativo={comparativo} />
 

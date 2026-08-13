@@ -5,6 +5,8 @@ import type {
   Gasto,
   Ganho,
   NotificacoesPreferencias,
+  PagamentoDivida,
+  PagamentoDividaDetalhado,
   VidaAnaliseSemanal,
   VidaConfiguracoes,
   VidaDiario,
@@ -98,6 +100,40 @@ export async function getDividas(usuarioId: string): Promise<Divida[]> {
     .order("status", { ascending: true })
     .order("prazo_vencimento", { ascending: true, nullsFirst: false });
   return (data as Divida[]) || [];
+}
+
+/**
+ * Pagamentos de dívida (tabela pagamentos_divida, sem usuario_id direto) do
+ * usuário num período, com o nome do credor anexado. Dinheiro que já saiu
+ * pra quitar dívida, pra contar no saldo de ganhos/gastos do relatório.
+ */
+export async function getPagamentosDividaPeriodo(
+  usuarioId: string,
+  inicio: string,
+  fim: string
+): Promise<PagamentoDividaDetalhado[]> {
+  const supabase = createClient();
+  const { data: dividas } = await supabase.from("dividas").select("id, credor").eq("usuario_id", usuarioId);
+  const dividasDoUsuario = dividas ?? [];
+  if (dividasDoUsuario.length === 0) return [];
+
+  const credorPorDivida = new Map(dividasDoUsuario.map((d) => [d.id, d.credor]));
+
+  const { data: pagamentos } = await supabase
+    .from("pagamentos_divida")
+    .select("*")
+    .in(
+      "divida_id",
+      dividasDoUsuario.map((d) => d.id)
+    )
+    .gte("data_pagamento", inicio)
+    .lte("data_pagamento", fim)
+    .order("data_pagamento", { ascending: false });
+
+  return ((pagamentos as PagamentoDivida[]) || []).map((p) => ({
+    ...p,
+    credor: credorPorDivida.get(p.divida_id) ?? "Dívida",
+  }));
 }
 
 export async function getProposito(usuarioId: string): Promise<VidaProposito> {

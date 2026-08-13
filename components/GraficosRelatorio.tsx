@@ -31,7 +31,7 @@ export default function GraficosRelatorio({
   serie: PontoDiario[];
 }) {
   const dadosPizza = porCategoria.map(([categoria, valor]) => ({ name: categoria, value: valor }));
-  const dadosBarra = serie.map((p) => ({ dia: p.dia, Ganhos: p.ganhos, Gastos: p.gastos }));
+  const dadosBarra = serie.map((p) => ({ dia: p.dia, Ganhos: p.ganhos, Gastos: p.gastos, Dívidas: p.pagamentosDivida }));
   const dadosLinha = serie.map((p) => ({ dia: p.dia, Saldo: p.saldoAcumulado }));
 
   return (
@@ -77,6 +77,7 @@ export default function GraficosRelatorio({
               <Legend wrapperStyle={{ color: COR_TEXTO, fontSize: 12 }} />
               <Bar dataKey="Ganhos" fill="#10B981" />
               <Bar dataKey="Gastos" fill="#EF4444" />
+              <Bar dataKey="Dívidas" fill="#F97316" />
             </BarChart>
           </ResponsiveContainer>
         </div>
