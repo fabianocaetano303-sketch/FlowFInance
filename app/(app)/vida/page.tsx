@@ -8,12 +8,15 @@ import BarraProgresso from "@/components/BarraProgresso";
 import {
   getConfiguracoesVida,
   getDiarioHoje,
+  getDiasSemAtivos,
+  getDiasSemLogs,
   getHabitos,
   getHabitosHistorico,
   getMetas,
   getProposito,
   getUsuarioAtual,
 } from "@/lib/queries";
+import { JANELA_STREAK_DIAS, melhoresStreaksDiasSem } from "@/lib/diasSem";
 import { diasAtras, formatarData, hojeISO, inicioFimMes } from "@/lib/financas";
 import {
   calcularStreak,
@@ -42,13 +45,21 @@ export default async function VidaDashboardPage() {
   const inicioJanela = diasAtras(JANELA_HISTORICO_DIAS);
   const janelaAnterior = janelaComparavelMesAnterior();
 
-  const [proposito, metas, habitos, config, diarioHoje] = await Promise.all([
+  const [proposito, metas, habitos, config, diarioHoje, rastreadoresDiasSem] = await Promise.all([
     getProposito(usuario.id),
     getMetas(usuario.id),
     getHabitos(usuario.id),
     getConfiguracoesVida(usuario.id),
     getDiarioHoje(usuario.id, hoje),
+    getDiasSemAtivos(usuario.id),
   ]);
+
+  const logsDiasSem = await getDiasSemLogs(
+    rastreadoresDiasSem.map((r) => r.id),
+    diasAtras(JANELA_STREAK_DIAS),
+    hoje
+  );
+  const melhoresDiasSem = melhoresStreaksDiasSem(rastreadoresDiasSem, logsDiasSem, hoje, 3);
 
   const habitosAtivos = habitos.filter((h) => h.ativo);
   const historico = await getHabitosHistorico(
@@ -156,6 +167,26 @@ export default async function VidaDashboardPage() {
             </p>
           </div>
         </section>
+
+        {melhoresDiasSem.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="titulo-secao !text-base">Dias Sem...</p>
+              <Link href="/vida/dias-sem" className="text-xs font-medium text-accent hover:underline">
+                Ver todos →
+              </Link>
+            </div>
+
+            <div className="card !p-5 space-y-3">
+              {melhoresDiasSem.map(({ rastreador, streak }) => (
+                <div key={rastreador.id} className="flex items-center justify-between">
+                  <p className="text-sm text-on-surface-variant">Dias sem {rastreador.descricao.toLowerCase()}</p>
+                  <p className="text-lg font-bold text-accent tnum">{streak}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">

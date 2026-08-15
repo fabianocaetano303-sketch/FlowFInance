@@ -7,6 +7,7 @@ const ABAS = [
   { href: "/vida", label: "Painel" },
   { href: "/vida/proposito", label: "Propósito" },
   { href: "/vida/habitos", label: "Hábitos" },
+  { href: "/vida/dias-sem", label: "Dias Sem" },
   { href: "/vida/diario", label: "Diário" },
   { href: "/vida/semana", label: "Semana" },
   { href: "/vida/progresso", label: "Progresso" },

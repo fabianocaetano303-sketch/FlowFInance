@@ -2,6 +2,10 @@
 
 App de controle financeiro pessoal. Next.js 14 (App Router) + Tailwind + Supabase.
 
+## Dias Sem
+
+Rastreador de "dias sem fazer algo" (ex: dias sem cerveja, dias sem gasto idiota), em `/vida/dias-sem`. Tabelas `dias_sem` (soft delete via `deletado_em`) e `dias_sem_log` (um registro por dia marcado/desmarcado, `unique (dias_sem_id, data)`). Streak é recalculado a partir do log a cada carregamento — hoje não marcado já zera o contador (diferente do streak de hábitos, que dá carência pro dia atual). Rotas: `GET/POST /api/dias-sem`, `DELETE /api/dias-sem/:id`, `POST /api/dias-sem/:id/marcar`.
+
 ## PWA
 
 O app é instalável (Android/iOS/desktop) via `public/manifest.json` + `public/service-worker.js`, registrado no layout raiz (`components/ServiceWorkerRegistrar.tsx`). O service worker faz cache só da shell estática (ícones, manifest, `offline.html`) — nunca de páginas autenticadas ou dos chunks com hash do Next.js, pra não quebrar a cada deploy — e mostra `public/offline.html` quando uma navegação falha por falta de rede. O mesmo arquivo também trata o clique em notificações (rota `notificationclick`, usado por `lib/notificacoes.ts`).

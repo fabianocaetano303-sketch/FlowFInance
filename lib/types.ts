@@ -171,6 +171,22 @@ export interface NotificacoesPreferencias {
   atualizado_em: string;
 }
 
+export interface DiasSem {
+  id: string;
+  usuario_id: string;
+  descricao: string;
+  criado_em: string;
+  deletado_em: string | null;
+}
+
+export interface DiasSemLog {
+  id: string;
+  dias_sem_id: string;
+  data: string;
+  marcado: boolean;
+  criado_em: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -267,6 +283,18 @@ export type Database = {
         Row: NotificacoesPreferencias;
         Insert: Partial<NotificacoesPreferencias> & { usuario_id: string };
         Update: Partial<NotificacoesPreferencias>;
+        Relationships: [];
+      };
+      dias_sem: {
+        Row: DiasSem;
+        Insert: Partial<DiasSem> & { usuario_id: string; descricao: string };
+        Update: Partial<DiasSem>;
+        Relationships: [];
+      };
+      dias_sem_log: {
+        Row: DiasSemLog;
+        Insert: Partial<DiasSemLog> & { dias_sem_id: string; data: string; marcado: boolean };
+        Update: Partial<DiasSemLog>;
         Relationships: [];
       };
     };

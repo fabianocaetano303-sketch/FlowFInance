@@ -168,6 +168,25 @@ create table if not exists notificacoes_preferencias (
   atualizado_em timestamptz default now()
 );
 
+-- Tabela: dias_sem (rastreador "dias sem fazer algo" — ex: dias sem cerveja)
+create table if not exists dias_sem (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references auth.users(id) on delete cascade,
+  descricao text not null,
+  criado_em timestamptz default now(),
+  deletado_em timestamptz
+);
+
+-- Tabela: dias_sem_log (um registro por dia marcado/desmarcado)
+create table if not exists dias_sem_log (
+  id uuid primary key default gen_random_uuid(),
+  dias_sem_id uuid not null references dias_sem(id) on delete cascade,
+  data date not null,
+  marcado boolean not null default true,
+  criado_em timestamptz default now(),
+  unique (dias_sem_id, data)
+);
+
 alter table ganhos enable row level security;
 alter table gastos enable row level security;
 alter table dividas enable row level security;
@@ -182,6 +201,8 @@ alter table vida_diario enable row level security;
 alter table vida_analises_semanais enable row level security;
 alter table vida_configuracoes enable row level security;
 alter table notificacoes_preferencias enable row level security;
+alter table dias_sem enable row level security;
+alter table dias_sem_log enable row level security;
 
 drop policy if exists ganhos_usuario on ganhos;
 create policy ganhos_usuario on ganhos for all using (auth.uid() = usuario_id) with check (auth.uid() = usuario_id);
@@ -241,6 +262,17 @@ create policy vida_configuracoes_usuario on vida_configuracoes for all
 drop policy if exists notificacoes_preferencias_usuario on notificacoes_preferencias;
 create policy notificacoes_preferencias_usuario on notificacoes_preferencias for all
   to authenticated using (auth.uid() = usuario_id) with check (auth.uid() = usuario_id);
+
+drop policy if exists dias_sem_usuario on dias_sem;
+create policy dias_sem_usuario on dias_sem for all
+  to authenticated using (auth.uid() = usuario_id) with check (auth.uid() = usuario_id);
+
+-- dias_sem_log: acesso via join com dias_sem (nao tem usuario_id direto)
+drop policy if exists dias_sem_log_usuario on dias_sem_log;
+create policy dias_sem_log_usuario on dias_sem_log for all
+  to authenticated
+  using (exists (select 1 from dias_sem d where d.id = dias_sem_log.dias_sem_id and d.usuario_id = auth.uid()))
+  with check (exists (select 1 from dias_sem d where d.id = dias_sem_log.dias_sem_id and d.usuario_id = auth.uid()));
 
 -- Storage: bucket para notas fiscais
 insert into storage.buckets (id, name, public)

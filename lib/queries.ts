@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
   ConfiguracoesUsuario,
+  DiasSem,
+  DiasSemLog,
   Divida,
   Gasto,
   Ganho,
@@ -252,6 +254,41 @@ export async function getAnalisesSemanais(usuarioId: string): Promise<VidaAnalis
     .eq("usuario_id", usuarioId)
     .order("data", { ascending: false });
   return (data as VidaAnaliseSemanal[]) || [];
+}
+
+export async function getDiasSemAtivos(usuarioId: string): Promise<DiasSem[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("dias_sem")
+    .select("*")
+    .eq("usuario_id", usuarioId)
+    .is("deletado_em", null)
+    .order("criado_em", { ascending: true });
+  return (data as DiasSem[]) || [];
+}
+
+/** Mapa dias_sem_id -> { data -> marcado }, no intervalo dado. */
+export async function getDiasSemLogs(
+  diasSemIds: string[],
+  inicio: string,
+  fim: string
+): Promise<Record<string, Record<string, boolean>>> {
+  const mapa: Record<string, Record<string, boolean>> = {};
+  if (diasSemIds.length === 0) return mapa;
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("dias_sem_log")
+    .select("*")
+    .in("dias_sem_id", diasSemIds)
+    .gte("data", inicio)
+    .lte("data", fim);
+
+  for (const registro of (data as DiasSemLog[]) || []) {
+    if (!mapa[registro.dias_sem_id]) mapa[registro.dias_sem_id] = {};
+    mapa[registro.dias_sem_id][registro.data] = registro.marcado;
+  }
+  return mapa;
 }
 
 export async function getNotificacoesPreferencias(usuarioId: string): Promise<NotificacoesPreferencias> {
