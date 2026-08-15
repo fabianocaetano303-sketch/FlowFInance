@@ -4,7 +4,7 @@ import VidaMantra from "@/components/VidaMantra";
 import DiasSemList, { type RastreadorCompleto } from "@/components/DiasSemList";
 import { getDiasSemAtivos, getDiasSemLogs, getProposito, getUsuarioAtual } from "@/lib/queries";
 import { diasAtras, hojeISO } from "@/lib/financas";
-import { JANELA_STREAK_DIAS, calcularStreakDiasSem, ultimos30DiasSem } from "@/lib/diasSem";
+import { JANELA_STREAK_DIAS, calcularStreakDiasSem, statusDiaSem, ultimos30DiasSem } from "@/lib/diasSem";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function DiasSemPage() {
     return {
       rastreador,
       streak: calcularStreakDiasSem(logPorData, hoje),
-      marcadoHoje: logPorData[hoje] === true,
+      statusHoje: statusDiaSem(logPorData, hoje),
       temHistorico: Object.keys(logPorData).length > 0,
       grade: ultimos30DiasSem(logPorData, hoje),
     };

@@ -33,6 +33,16 @@ export interface DiaDiasSem {
   marcado: boolean;
 }
 
+export type StatusDiaSem = "cumpriu" | "nao_cumpriu" | "pendente";
+
+/** Status explícito do dia: cumpriu (marcado=true), não cumpriu (marcado=false) ou ainda sem marcação. */
+export function statusDiaSem(logPorData: Record<string, boolean>, data: string): StatusDiaSem {
+  const valor = logPorData[data];
+  if (valor === true) return "cumpriu";
+  if (valor === false) return "nao_cumpriu";
+  return "pendente";
+}
+
 /** Últimos 30 dias (mais antigo primeiro, hoje por último) pra grade visual. */
 export function ultimos30DiasSem(logPorData: Record<string, boolean>, hoje: string = hojeISO()): DiaDiasSem[] {
   const dias: DiaDiasSem[] = [];

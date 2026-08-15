@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DiasSem } from "@/lib/types";
 import { hojeISO } from "@/lib/financas";
-import type { DiaDiasSem } from "@/lib/diasSem";
+import type { DiaDiasSem, StatusDiaSem } from "@/lib/diasSem";
 import GradeDiasSem from "@/components/GradeDiasSem";
 
 export interface RastreadorCompleto {
   rastreador: DiasSem;
   streak: number;
-  marcadoHoje: boolean;
+  statusHoje: StatusDiaSem;
   temHistorico: boolean;
   grade: DiaDiasSem[];
 }
@@ -90,7 +90,7 @@ function NovoRastreadorForm({ onCriado }: { onCriado: () => void }) {
 }
 
 function RastreadorCard({ item, onAlterado }: { item: RastreadorCompleto; onAlterado: () => void }) {
-  const { rastreador, streak, marcadoHoje, temHistorico, grade } = item;
+  const { rastreador, streak, statusHoje, temHistorico, grade } = item;
   const [marcando, setMarcando] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
@@ -98,13 +98,13 @@ function RastreadorCard({ item, onAlterado }: { item: RastreadorCompleto; onAlte
 
   const sequenciaQuebrada = streak === 0 && temHistorico;
 
-  async function alternarHoje() {
+  async function marcarHoje(marcado: boolean) {
     setErro(null);
     setMarcando(true);
     const resposta = await fetch(`/api/dias-sem/${rastreador.id}/marcar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: hojeISO(), marcado: !marcadoHoje }),
+      body: JSON.stringify({ data: hojeISO(), marcado }),
     });
     setMarcando(false);
 
@@ -131,23 +131,7 @@ function RastreadorCard({ item, onAlterado }: { item: RastreadorCompleto; onAlte
 
   return (
     <div className="card !p-5">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <p className="text-base font-semibold text-on-surface">Dias sem {rastreador.descricao.toLowerCase()}</p>
-        <button
-          onClick={alternarHoje}
-          disabled={marcando}
-          aria-label={marcadoHoje ? "Desmarcar hoje" : "Marcar hoje"}
-          className={`w-11 h-11 rounded-full border-2 shrink-0 flex items-center justify-center transition-all duration-300 ${
-            marcadoHoje ? "bg-primary border-primary" : "border-outline-variant"
-          }`}
-        >
-          {marcadoHoje && (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#052E1F" strokeWidth="3">
-              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </button>
-      </div>
+      <p className="text-base font-semibold text-on-surface mb-3">Dias sem {rastreador.descricao.toLowerCase()}</p>
 
       <p className="number-hero">{streak}</p>
       <p className="number-label mb-3">{streak === 1 ? "1 dia" : `${streak} dias`}</p>
@@ -155,6 +139,34 @@ function RastreadorCard({ item, onAlterado }: { item: RastreadorCompleto; onAlte
       {sequenciaQuebrada && (
         <p className="text-xs font-medium text-tertiary mb-3">Sequência quebrada — comece novamente hoje.</p>
       )}
+
+      <p className="label-field !mb-1.5">Hoje você cumpriu?</p>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => marcarHoje(true)}
+          disabled={marcando}
+          className={`flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
+            statusHoje === "cumpriu"
+              ? "bg-primary border-primary text-on-primary"
+              : "border-outline-variant text-on-surface-variant"
+          }`}
+        >
+          ✓ Cumpri
+        </button>
+        <button
+          type="button"
+          onClick={() => marcarHoje(false)}
+          disabled={marcando}
+          className={`flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
+            statusHoje === "nao_cumpriu"
+              ? "bg-tertiary border-tertiary text-on-tertiary"
+              : "border-outline-variant text-on-surface-variant"
+          }`}
+        >
+          ✗ Não cumpri
+        </button>
+      </div>
 
       <GradeDiasSem dias={grade} />
 
