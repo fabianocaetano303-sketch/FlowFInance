@@ -69,6 +69,14 @@
 }
 
 @layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 48px -12px rgba(16, 185, 129, 0.55);
+  }
+
+  .glow-tertiary {
+    box-shadow: 0 0 48px -14px rgba(239, 68, 68, 0.45);
+  }
+
   .animate-shine-bg {
     background-image: linear-gradient(
       110deg,

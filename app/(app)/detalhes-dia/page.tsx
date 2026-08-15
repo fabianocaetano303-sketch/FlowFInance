@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import SeletorDiaDetalhes from "@/components/SeletorDiaDetalhes";
+import ResumoSaldoDia from "@/components/ResumoSaldoDia";
 import DetalhesDiaList from "@/components/DetalhesDiaList";
 import type { RegistroUnificado } from "@/components/RegistroCard";
 import { getGanhosPeriodo, getGastosPeriodo, getUsuarioAtual } from "@/lib/queries";
-import { formatarData, formatarMoeda, gastosPorCategoria, hojeISO, somaValores } from "@/lib/financas";
+import { formatarData, gastosPorCategoria, hojeISO, somaValores } from "@/lib/financas";
 
 export const dynamic = "force-dynamic";
 
@@ -52,31 +53,17 @@ export default async function DetalhesDiaPage({ searchParams }: { searchParams: 
         <p className="text-sm text-on-surface-variant">Veja tudo que aconteceu num dia específico</p>
       </header>
 
-      <div className="px-4 pt-3 space-y-4">
+      <div className="px-4 pt-3 space-y-5">
         <SeletorDiaDetalhes data={data} />
 
-        <div className="card !p-5">
-          <p className="text-2xl font-bold text-on-surface tnum mb-4">{formatarData(data)}</p>
+        <p className="text-sm font-semibold text-on-surface-variant tnum text-center">{formatarData(data)}</p>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p className="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Ganho</p>
-              <p className="text-base font-semibold text-primary tnum">{formatarMoeda(totalGanhos)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Gasto</p>
-              <p className="text-base font-semibold text-tertiary tnum">{formatarMoeda(totalGastos)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Sobrou</p>
-              <p className={`text-base font-semibold tnum ${sobrou >= 0 ? "text-primary" : "text-tertiary"}`}>
-                {formatarMoeda(sobrou)}
-              </p>
-            </div>
-          </div>
+        <ResumoSaldoDia totalGanhos={totalGanhos} totalGastos={totalGastos} saldo={sobrou} />
+
+        <div>
+          <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wide px-1 mb-2">Detalhes</p>
+          <DetalhesDiaList ganhos={ganhos} gastos={gastos} porCategoria={porCategoria} />
         </div>
-
-        <DetalhesDiaList ganhos={ganhos} gastos={gastos} porCategoria={porCategoria} />
       </div>
     </>
   );
