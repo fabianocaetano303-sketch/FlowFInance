@@ -110,6 +110,11 @@ export default async function RelatoriosPage({
           <span className="text-primary">Editar e excluir →</span>
         </Link>
 
+        <Link href="/detalhes-dia" className="card !p-4 flex items-center justify-between text-sm font-medium text-on-surface">
+          Detalhes do Dia
+          <span className="text-primary">Ver um dia específico →</span>
+        </Link>
+
         <div className="card !p-5 space-y-3">
           <p className="text-sm font-semibold text-on-surface">Resumo</p>
           <div className="flex items-center justify-between text-sm">

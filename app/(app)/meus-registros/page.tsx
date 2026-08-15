@@ -16,6 +16,7 @@ export default async function MeusRegistrosPage() {
     valor: g.valor,
     descricao: g.descricao,
     data: g.data,
+    criado_em: g.criado_em,
   }));
 
   const gastos: RegistroUnificado[] = gastosRaw.map((g) => ({
@@ -26,6 +27,7 @@ export default async function MeusRegistrosPage() {
     data: g.data,
     categoria: g.categoria,
     eh_desnecessario: g.eh_desnecessario,
+    criado_em: g.criado_em,
   }));
 
   return (
